@@ -12,6 +12,27 @@ model User {
   login         String @unique
   password_hash String
 
-  tg_id       Int    @unique
-  tg_username String @unique
+  tg_id       Int     @unique
+  tg_username String  @unique
+  Order       Order[]
+}
+
+model Order {
+  id               String   @id @default(uuid())
+  dateIn           DateTime
+  duration         Int
+  country          String
+  hotel            String
+  pansion          String
+  room_type        String
+  price            Int
+  available_places String
+  price_with_loss  Int
+  category         String
+  boarding         String
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  created_at DateTime @default(now())
 }

@@ -4,7 +4,7 @@ import * as React from "react";
 import { cn } from "~/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center space-x-2 select-none rounded-lg justify-center whitespace-nowrap ring-offset-white transition-colors focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-70 duration-300",
+  "inline-flex items-center justify-center select-none rounded-lg justify-center whitespace-nowrap ring-offset-white transition-colors focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-70 duration-300",
   {
     variants: {
       variant: {
@@ -62,9 +62,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {left_icon}
         {isLoading ? (
           <Loader className="mr-2 animate-spin text-white" size={18} />
-        ) : (
-          <span>{children}</span>
-        )}
+        ) : null}
+        {children}
         {icon}
       </button>
     );

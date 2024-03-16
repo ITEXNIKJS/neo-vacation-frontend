@@ -14,8 +14,8 @@ import {
 import { Input } from "~/components/ui/input";
 
 const schema = zod.object({
-  login: zod.string(),
-  password: zod.string(),
+  login: zod.string({ required_error: "Введите логин" }),
+  password: zod.string({ required_error: "Введите пароль" }),
 });
 
 type FormData = zod.infer<typeof schema>;
@@ -24,7 +24,7 @@ export const AuthFormResolver = zodResolver(schema);
 
 export const AuthenticationForm: FC = () => {
   const form = useRemixForm<FormData>({
-    mode: "onSubmit",
+    mode: "onBlur",
     resolver: AuthFormResolver,
     submitConfig: {
       action: "/action/login",

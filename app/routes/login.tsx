@@ -1,4 +1,5 @@
-import { type MetaFunction } from "@remix-run/node";
+import { type MetaFunction, type LoaderFunctionArgs } from "@remix-run/node";
+import { check_auth } from "~/services/authentication";
 import { AuthenticationForm } from "~/widgets";
 
 export const meta: MetaFunction = () => {
@@ -8,7 +9,14 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  return await check_auth(request, { successRedirect: "/" });
+};
+
 export default function Index() {
+
+  
+
   return (
     <div className="flex flex-row w-full h-screen items-center justify-center">
       <div className="max-w-lg space-y-6">

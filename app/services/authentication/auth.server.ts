@@ -1,37 +1,53 @@
-import { Authenticator } from "remix-auth";
-import { User } from "@prisma/client";
 import { prisma } from "../db";
-import { sessionStorage } from "./session.server";
-import { FormStrategy } from "remix-auth-form";
 import * as argon2 from "argon2";
+import { sessionStorage } from "./session.server";
+import { redirect } from "@remix-run/node";
 
-const authenticator = new Authenticator<Pick<User, "login">>(sessionStorage);
+const login = async (login: string, password: string) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      login,
+    },
+    select: {
+      id: true,
+      password_hash: true,
+    },
+  });
 
-authenticator.use(
-  new FormStrategy(async ({ form }) => {
-    // console.log(context);
+  if (!user) return { error: "Неверный логин или пароль" };
 
-    const login = form.get("login") as string;
-    const password = form.get("password") as string;
+  const isPasswordMatch = argon2.verify(user.password_hash, password);
 
-    const user = await prisma.user.findUnique({
-      where: {
-        login,
-      },
-      select: {
-        login: true,
-        password_hash: true,
-      },
-    });
+  if (!isPasswordMatch) return { error: "Неверный логин или пароль" };
 
-    if (!user) throw Error("user not exists");
+  return { user_id: user.id, error: null };
+};
 
-    const isPasswordMatch = argon2.verify(user.password_hash, password);
+interface CheckAuthURLS {
+  successRedirect?: string;
+  failerRedirect?: string;
+}
 
-    if (!isPasswordMatch) throw Error("Password not match");
+const check_auth = async (request: Request, url?: CheckAuthURLS) => {
+  const session = await sessionStorage.getSession(
+    request.headers.get("Cookie")
+  );
 
-    return { login: user.login };
-  })
-);
+  if (!session.data.user_id) {
+    session.flash("error", "Invalid username/password");
+    if (url?.failerRedirect) {
+      return redirect(url?.failerRedirect, {
+        headers: {
+          "Set-Cookie": await sessionStorage.destroySession(session),
+        },
+      });
+    }
+    return null;
+  }
 
-export { authenticator };
+  if (url?.successRedirect) return redirect(url?.successRedirect);
+
+  return session.data.user_id;
+};
+
+export { login, check_auth };
